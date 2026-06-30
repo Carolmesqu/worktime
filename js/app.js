@@ -125,6 +125,34 @@ function setupEventListeners(user) {
         });
     }
 
+    // Máscara inteligente para o campo de Duração (Formato 00:00)
+    const punchHoursInput = document.querySelector("#punchHours");
+    if (punchHoursInput) {
+        punchHoursInput.addEventListener("input", (e) => {
+            let value = e.target.value;
+
+            // 1. Remove qualquer caractere que não seja número
+            value = value.replace(/\D/g, "");
+
+            // 2. Se tiver mais de 2 números, injeta os dois pontos automaticamente
+            if (value.length > 2) {
+                value = value.substring(0, 2) + ":" + value.substring(2, 4);
+            }
+
+            // Atualiza o valor do campo na tela com a máscara aplicada
+            e.target.value = value;
+        });
+
+        // Validação extra caso a pessoa deixe o campo incompleto ao sair dele
+        punchHoursInput.addEventListener("blur", (e) => {
+            const value = e.target.value;
+            if (value && value.length < 5) {
+                alert("Por favor, insira a duração completa no formato 00:00");
+                e.target.value = ""; // Limpa para evitar envio incorreto
+            }
+        });
+    }
+
     // Monitorar a troca do tipo de controle no Perfil para esconder/mostrar o valor por hora
     const userJobType = document.querySelector("#userJobType");
     const valHoraGroup = document.querySelector("#valHoraGroup");

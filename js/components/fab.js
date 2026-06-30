@@ -18,7 +18,8 @@ export function FAB() {
 
                     <div class="form-group">
                         <label for="punchHours">Quantidade de Horas</label>
-                        <input type="text" id="punchHours" placeholder="Ex: 08:00 ou 4.5" required>
+                        <!-- MODIFICADO: type="tel", placeholder e maxlength="5" para a máscara funcionar perfeitamente -->
+                        <input type="tel" id="punchHours" placeholder="00:00" maxlength="5" autocomplete="off" required>
                     </div>
 
                     <div class="form-group">
