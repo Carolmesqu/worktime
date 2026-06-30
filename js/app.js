@@ -189,6 +189,94 @@ function setupEventListeners(user) {
             setupEventListeners(user);
         });
     }
+
+    // Eventos para a página de Atendimentos
+    const btnNovoAtendimento = document.querySelector("#btnNovoAtendimento");
+    const modalAtendimento = document.querySelector("#modalAtendimento");
+    const btnCancelarAtendimento = document.querySelector("#btnCancelarAtendimento");
+    const btnSalvarAtendimento = document.querySelector("#btnSalvarAtendimento");
+
+    if (btnNovoAtendimento && modalAtendimento) {
+        // Abrir modal de novo atendimento
+        btnNovoAtendimento.addEventListener("click", () => {
+            modalAtendimento.classList.add("active");
+        });
+
+        // Cancelar e fechar modal
+        if (btnCancelarAtendimento) {
+            btnCancelarAtendimento.addEventListener("click", () => {
+                modalAtendimento.classList.remove("active");
+                document.querySelector("#atendimentoTitulo").value = "";
+                document.querySelector("#atendimentoDescricao").value = "";
+            });
+        }
+
+        // Salvar novo atendimento
+        if (btnSalvarAtendimento) {
+            btnSalvarAtendimento.addEventListener("click", async () => {
+                const titulo = document.querySelector("#atendimentoTitulo").value.trim();
+                const descricao = document.querySelector("#atendimentoDescricao").value.trim();
+
+                if (!titulo) {
+                    alert("Por favor, insira um título para o atendimento!");
+                    return;
+                }
+
+                try {
+                    const { atendimentosService } = await import("./services/atendimentos.js");
+                    await atendimentosService.saveAtendimento(user.email, { titulo, descricao });
+
+                    modalAtendimento.classList.remove("active");
+                    document.querySelector("#atendimentoTitulo").value = "";
+                    document.querySelector("#atendimentoDescricao").value = "";
+
+                    alert("Atendimento criado com sucesso! 📋");
+
+                    await render(app, user);
+                    setupEventListeners(user);
+                } catch (err) {
+                    alert("Erro ao criar atendimento.");
+                    console.error(err);
+                }
+            });
+        }
+    }
+
+    // Finalizar atendimento
+    const btnsFinalizar = document.querySelectorAll(".btn-finalizar");
+    btnsFinalizar.forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const atendimentoId = btn.getAttribute("data-id");
+            
+            if (confirm("Deseja finalizar este atendimento?")) {
+                try {
+                    const { atendimentosService } = await import("./services/atendimentos.js");
+                    await atendimentosService.finalizarAtendimento(user.email, atendimentoId);
+
+                    alert("Atendimento finalizado! ✅");
+
+                    // Aguarda 1 segundo para o Google Sheets processar
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    await render(app, user);
+                    setupEventListeners(user);
+                } catch (err) {
+                    alert("Erro ao finalizar atendimento.");
+                    console.error(err);
+                }
+            }
+        });
+    });
+
+    // Ouvinte para o filtro da página de Atendimentos
+    const atendimentoMonthFilter = document.querySelector("#atendimentoMonthFilter");
+    if (atendimentoMonthFilter) {
+        atendimentoMonthFilter.addEventListener("change", async (e) => {
+            state.currentPeriod = e.target.value; // Salva o mês escolhido no estado global!
+            await render(app, user);
+            setupEventListeners(user);
+        });
+    }
 }
 
 // Inicialização da Aplicação

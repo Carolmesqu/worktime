@@ -9,6 +9,10 @@ export function Navbar() {
                 <span class="icon">📅</span>
                 <span class="label">Histórico</span>
             </button>
+            <button class="nav-item" data-page="atendimentos">
+                <span class="icon">📋</span>
+                <span class="label">Atendimentos</span>
+            </button>
             <button class="nav-item" data-page="perfil">
                 <span class="icon">👤</span>
                 <span class="label">Perfil</span>

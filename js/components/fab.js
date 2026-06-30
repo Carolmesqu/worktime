@@ -3,8 +3,8 @@ export function FAB() {
     const today = new Date().toISOString().split('T')[0];
 
     return `
-        <button class="fab" id="fabPunchClock" title="Registrar Ponto">
-            <span class="fab-icon">➕</span>
+        <button class="fab" id="fabPunchClock" title="Lançar Horas Extras">
+            ⏱️
         </button>
 
         <div class="modal-overlay" id="punchModal">

@@ -1,11 +1,13 @@
 import { Login } from "./pages/login.js";
 import { Dashboard } from "./pages/dashboard.js";
 import { Historico } from "./pages/historico.js";
+import { Atendimentos } from "./pages/atendimentos.js";
 import { Perfil } from "./pages/perfil.js";
 import { Navbar } from "./components/navbar.js";
 import { FAB } from "./components/fab.js";
 import { state } from "./state.js";
 import { storageService } from "./services/storage.js";
+import { atendimentosService } from "./services/atendimentos.js";
 
 export async function render(app, user) {
     if (!user) {
@@ -23,6 +25,9 @@ export async function render(app, user) {
         const punches = await storageService.getPunches(user.email);
         // Passa o período guardado no estado global
         pageContent = Historico(user, punches, state.currentPeriod);
+    } else if (state.currentPage === "atendimentos") {
+        const atendimentos = await atendimentosService.getAtendimentos(user.email);
+        pageContent = Atendimentos(user, atendimentos, state.currentPeriod);
     } else if (state.currentPage === "perfil") {
         pageContent = Perfil(user);
     }
