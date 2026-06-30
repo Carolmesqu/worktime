@@ -5,6 +5,7 @@ import { Atendimentos } from "./pages/atendimentos.js";
 import { Perfil } from "./pages/perfil.js";
 import { Navbar } from "./components/navbar.js";
 import { FAB } from "./components/fab.js";
+import { Loading } from "./components/loading.js";
 import { state } from "./state.js";
 import { storageService } from "./services/storage.js";
 import { atendimentosService } from "./services/atendimentos.js";
@@ -14,6 +15,9 @@ export async function render(app, user) {
         app.innerHTML = Login();
         return;
     }
+
+    // Mostra loading
+    app.innerHTML = Loading();
 
     let pageContent = "";
 
