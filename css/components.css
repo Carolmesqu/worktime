@@ -16,9 +16,11 @@ body {
 
 /* Container Principal - Padrão Celular */
 .app-container {
-    width: 100%;
-    min-height: 100vh;
-    height: 100vh;
+    width: calc(100% - 20px);
+    min-height: calc(100vh - 20px);
+    height: auto;
+    max-height: calc(100vh - 20px);
+    margin: 10px;
     background: linear-gradient(135deg, #f5f7fa 0%, #e8eaf6 100%);
     position: relative;
     display: flex;
@@ -26,6 +28,7 @@ body {
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
     z-index: 1;
+    border-radius: 20px;
 }
 
 /* Quando a tela for maior que um celular (Tablets e Desktops) */
@@ -37,6 +40,7 @@ body {
         min-height: 600px;
         max-height: calc(100vh - 40px);
         border-radius: 24px;
+        margin: 0;
     }
 }
 
@@ -46,14 +50,6 @@ body {
         max-width: 450px;
         max-height: calc(100vh - 40px);
         border-radius: 28px;
-    }
-}
-
-/* Mobile - sem arredondar */
-@media (max-width: 479px) {
-    .app-container {
-        border-radius: 0;
-        max-height: 100vh;
     }
 }
 
