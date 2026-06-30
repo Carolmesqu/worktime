@@ -1,18 +1,19 @@
 :root {
-    --bg-primary: #f8f9fa;
-    --bg-surface: #ffffff;
-    --bg-accent: #4f46e5; /* Roxo/Azul moderno */
-    --bg-accent-hover: #4338ca;
+    --bg-primary: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --bg-surface: rgba(255, 255, 255, 0.95);
+    --bg-accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-accent-solid: #667eea;
+    --bg-accent-hover: #5568d3;
     --bg-danger: #ef4444;
     
     --text-primary: #1f2937;
-    --text-secondary: #4b5563;
+    --text-secondary: #6b7280;
     --text-on-accent: #ffffff;
     
-    --border-color: #e5e7eb;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --border-color: rgba(229, 231, 235, 0.8);
+    --shadow-sm: 0 2px 8px rgba(102, 126, 234, 0.1);
+    --shadow-md: 0 8px 16px rgba(102, 126, 234, 0.15);
+    --shadow-lg: 0 12px 24px rgba(102, 126, 234, 0.2);
     
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --transition-fast: 0.2s ease;
