@@ -101,6 +101,8 @@ body {
     gap: 4px;
     transition: var(--transition-fast);
     flex: 1;
+    padding: 8px 12px;
+    border-radius: 12px;
 }
 
 .nav-item .icon {
@@ -110,6 +112,7 @@ body {
 .nav-item.active {
     color: var(--bg-accent);
     font-weight: 600;
+    background-color: rgba(79, 70, 229, 0.35);
 }
 
 /* Floating Action Button (FAB) */

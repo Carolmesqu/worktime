@@ -21,7 +21,7 @@ export function Perfil(user) {
 
                 <div class="form-group" id="valHoraGroup" style="display: ${savedType === 'dinheiro' ? 'block' : 'none'};">
                     <label for="userHourValue">Valor da sua Hora Extra (R$)</label>
-                    <input type="number" id="userHourValue" step="0.01" value="${savedValue}" placeholder="Ex: 25.50">
+                    <input type="text" id="userHourValue" inputmode="decimal" value="${savedValue}" placeholder="Ex: 25.50">
                 </div>
 
                 <button id="btnSaveConfig" class="btn-primary" style="margin-top: 10px; width:100%;">Salvar Preferências</button>

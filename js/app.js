@@ -167,7 +167,16 @@ function setupEventListeners(user) {
     if (btnSaveConfig && user) {
         btnSaveConfig.addEventListener("click", async () => {
             const typeValue = document.querySelector("#userJobType").value;
-            const hourValue = document.querySelector("#userHourValue") ? document.querySelector("#userHourValue").value : "0.00";
+            let hourValue = document.querySelector("#userHourValue") ? document.querySelector("#userHourValue").value : "0.00";
+
+            // Validar e formatar o valor da hora
+            hourValue = hourValue.replace(',', '.'); // Aceita vírgula também
+            const numValue = parseFloat(hourValue) || 0;
+            if (numValue < 0) {
+                alert("O valor não pode ser negativo!");
+                return;
+            }
+            hourValue = numValue.toFixed(2); // Formata com 2 casas decimais
 
             // Salva individualmente usando o e-mail do usuário como chave única
             localStorage.setItem(`worktime_type_${user.email}`, typeValue);
