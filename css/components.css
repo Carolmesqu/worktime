@@ -19,7 +19,6 @@ body {
     width: 100%;
     min-height: 100vh;
     height: 100vh;
-    max-height: 100vh;
     background: linear-gradient(135deg, #f5f7fa 0%, #e8eaf6 100%);
     position: relative;
     display: flex;
@@ -32,18 +31,29 @@ body {
 /* Quando a tela for maior que um celular (Tablets e Desktops) */
 @media (min-width: 480px) {
     .app-container {
-        width: 420px;     /* Força uma largura excelente e mais robusta */
-        height: 85vh;     /* Proporção vertical elegante */
-        border-radius: 20px;
-        position: relative;
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        min-height: 600px;
+        max-height: calc(100vh - 40px);
+        border-radius: 24px;
     }
 }
 
 /* Telas de Monitores Grandes */
 @media (min-width: 1024px) {
     .app-container {
-        width: 450px;     /* Um pouquinho mais largo para monitores grandes */
-        height: 88vh;
+        max-width: 450px;
+        max-height: calc(100vh - 40px);
+        border-radius: 28px;
+    }
+}
+
+/* Mobile - sem arredondar */
+@media (max-width: 479px) {
+    .app-container {
+        border-radius: 0;
+        max-height: 100vh;
     }
 }
 
@@ -83,14 +93,15 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 70px;
+    min-height: 70px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding: 8px 4px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
     z-index: 10;
     box-shadow: 0 -4px 12px rgba(102, 126, 234, 0.1);
 }
@@ -101,24 +112,36 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     color: var(--text-secondary);
     cursor: pointer;
-    font-size: 0.75rem;
-    gap: 4px;
+    font-size: 0.7rem;
+    gap: 2px;
     transition: var(--transition-fast);
     flex: 1;
-    padding: 8px 12px;
-    border-radius: 12px;
+    padding: 6px 4px;
+    border-radius: 10px;
+    margin: 0 2px;
+    min-width: 60px;
 }
 
 .nav-item .icon {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
+}
+
+.nav-item .label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .nav-item.active {
     color: #667eea;
     font-weight: 600;
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+    border: 2px solid rgba(102, 126, 234, 0.4);
+    padding: 4px 6px;
 }
 
 /* Floating Action Button (FAB) */
