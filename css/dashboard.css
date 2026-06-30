@@ -1,10 +1,46 @@
-.dashboard, .historico, .perfil, .atendimentos {
+.dashboard, .historico, .perfil {
     padding: 20px;
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch; /* Smooth scroll no iOS */
     padding-bottom: 160px; /* Garante que o conteúdo não fique escondido atrás do FAB/Navbar */
+}
+
+/* Filtro de Período */
+.filter-container {
+    background-color: var(--bg-surface);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-container label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.filter-container input[type="month"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.8);
+    outline: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.filter-container input[type="month"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .dashboard {
@@ -75,124 +111,4 @@
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 600;
-}
-
-/* Container de Filtro por Mês */
-.filter-container {
-    background-color: var(--bg-surface);
-    padding: 14px 20px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.filter-container label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.filter-container input[type="month"] {
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-family: var(--font-sans);
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    background-color: var(--bg-primary);
-    outline: none;
-    cursor: pointer;
-}
-
-/* Estilos para a página de Atendimentos */
-.atendimentos-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.atendimento-card {
-    background-color: var(--bg-primary);
-    padding: 16px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    transition: var(--transition-fast);
-}
-
-.atendimento-card:hover {
-    border-color: var(--bg-accent);
-    box-shadow: var(--shadow-sm);
-}
-
-.atendimento-card.finalizado {
-    opacity: 0.7;
-}
-
-.atendimento-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.atendimento-header strong {
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.badge-aberto {
-    background-color: rgba(234, 179, 8, 0.2);
-    color: #eab308;
-}
-
-.badge-finalizado {
-    background-color: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-}
-
-.atendimento-desc {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 12px;
-    line-height: 1.4;
-}
-
-.atendimento-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-
-.atendimento-footer small {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-}
-
-.btn-finalizar {
-    background-color: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-    border: 1px solid #22c55e;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition-fast);
-}
-
-.btn-finalizar:hover {
-    background-color: #22c55e;
-    color: white;
 }
