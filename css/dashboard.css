@@ -2,6 +2,8 @@
     padding: 20px;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll no iOS */
     padding-bottom: 160px; /* Garante que o conteúdo não fique escondido atrás do FAB/Navbar */
 }
 
