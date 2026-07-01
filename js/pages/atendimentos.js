@@ -1,5 +1,5 @@
 import { Header } from "../components/header.js";
-import { formatDateTime } from "../utils/format.js";
+import { formatDateTime, formatDate } from "../utils/format.js";
 
 export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
     // Pega o mês/ano atual no formato YYYY-MM se não tiver período selecionado
@@ -7,7 +7,8 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
     
     // Filtra atendimentos pelo mês selecionado
     const atendimentosFiltrados = atendimentos.filter(a => {
-        const atendimentoMonth = a.dataInicio.slice(0, 7); // Extrai YYYY-MM
+        const dataBase = a.dataInicio || a.dataPrevista || "";
+        const atendimentoMonth = dataBase.slice(0, 7); // Extrai YYYY-MM
         return atendimentoMonth === currentPeriod;
     });
     
@@ -45,11 +46,20 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
                                     <span class="badge badge-aberto">Em Aberto</span>
                                 </div>
                                 ${atendimento.descricao ? `<p class="atendimento-desc">${atendimento.descricao}</p>` : ''}
+                                ${atendimento.dataPrevista ? `<p class="atendimento-data-prevista">🎯 Previsto para: ${formatDate(atendimento.dataPrevista)}</p>` : ''}
                                 <div class="atendimento-footer">
-                                    <small>📅 ${formatDateTime(atendimento.dataInicio)}</small>
-                                    <button class="btn-finalizar" data-id="${atendimento.id}">
-                                        ✅ Finalizar
-                                    </button>
+                                    <small>📅 Criado: ${formatDateTime(atendimento.dataInicio)}</small>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn-editar" data-id="${atendimento.id}" 
+                                            data-titulo="${atendimento.titulo}" 
+                                            data-descricao="${atendimento.descricao || ''}" 
+                                            data-dataprevista="${atendimento.dataPrevista || ''}">
+                                            ✏️ Editar
+                                        </button>
+                                        <button class="btn-finalizar" data-id="${atendimento.id}">
+                                            ✅ Finalizar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
@@ -84,12 +94,16 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
         </main>
 
         <!-- Modal para Novo Atendimento -->
-        <div class="modal-overlay" id="modalAtendimento">
+        <div class="modal-overlay" id="modalAtendimento" data-editing-id="">
             <div class="modal-content">
-                <h3>Novo Atendimento</h3>
+                <h3 id="modalAtendimentoTitle">Novo Atendimento</h3>
                 <div class="form-group">
                     <label for="atendimentoTitulo">Título *</label>
                     <input type="text" id="atendimentoTitulo" placeholder="Ex: Cliente XYZ - Suporte" required>
+                </div>
+                <div class="form-group">
+                    <label for="atendimentoDataPrevista">Data Prevista *</label>
+                    <input type="date" id="atendimentoDataPrevista" required>
                 </div>
                 <div class="form-group">
                     <label for="atendimentoDescricao">Descrição (opcional)</label>

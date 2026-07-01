@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Gerar Ícones PWA</title>
+</head>
+<body>
+    <h2>Gerando ícones...</h2>
+    <p>Clique com o botão direito nas imagens abaixo e salve como:</p>
+    <p><strong>icon-192.png</strong></p>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <br><br>
+    <p><strong>icon-512.png</strong></p>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+
+            // Gradiente de fundo
+            const gradient = ctx.createLinearGradient(0, 0, 0, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Círculo branco no centro
+            const margin = size / 4;
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const radius = size / 3;
+
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Borda do relógio
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = size / 40;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // Ponteiro das horas (apontando para 10h)
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = size / 50;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX - radius * 0.3, centerY - radius * 0.4);
+            ctx.stroke();
+
+            // Ponteiro dos minutos (apontando para 2)
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = size / 60;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + radius * 0.5, centerY - radius * 0.3);
+            ctx.stroke();
+
+            // Círculo central
+            ctx.fillStyle = '#667eea';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, size / 50, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Converter para download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = canvasId.replace('canvas', 'icon-') + '.png';
+                a.textContent = `Baixar ${a.download}`;
+                canvas.parentElement.appendChild(document.createElement('br'));
+                canvas.parentElement.appendChild(a);
+            });
+        }
+
+        createIcon('canvas192', 192);
+        createIcon('canvas512', 512);
+    </script>
+</body>
+</html>

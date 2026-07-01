@@ -3,19 +3,23 @@
   "short_name": "WorkTime",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f8f9fa",
-  "theme_color": "#4f46e5",
-  "orientation": "portrait",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "description": "Controle suas horas de trabalho e atendimentos",
   "icons": [
     {
-      "src": "./assets/logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "./assets/favicon.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

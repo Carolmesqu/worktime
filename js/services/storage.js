@@ -1,5 +1,90 @@
 // Substitua pela URL gerada na publicação do seu Google Apps Script
-const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyh1J3qZDX3mV7wocHCuiA8Sx3xBTcca4fIv7V5aP0NIAkms6B2JS7yFVt6WOp5z7Nupg/exec";
+//const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyh1J3qZDX3mV7wocHCuiA8Sx3xBTcca4fIv7V5aP0NIAkms6B2JS7yFVt6WOp5z7Nupg/exec";
+const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbx5yHCGXI96pW42x5YW0V2RgSSRSNbmSeYL-_0yocWoHescYVkFWXDH0vAEzqLYYp8TYQ/exec";
+
+function normalizeDate(value) {
+    if (!value) return "";
+
+    const raw = String(value).trim();
+    if (!raw) return "";
+
+    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+        return raw.slice(0, 10);
+    }
+
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toISOString().slice(0, 10);
+    }
+
+    return raw;
+}
+
+function normalizeDuration(value, horaSaida = "") {
+    if (value == null) return "";
+
+    const raw = String(value).trim();
+    if (!raw) return "";
+
+    // Formato já esperado (HH:MM)
+    if (/^\d{1,2}:\d{2}$/.test(raw)) {
+        const [h, m] = raw.split(":").map(Number);
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+
+    // Estrutura de entrada/saída (HH:MM - HH:MM)
+    if (/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(raw)) {
+        return raw;
+    }
+
+    // Quando o Sheets devolve duração como data (ex.: 1899-12-30T03:38:28.000Z)
+    if (raw.includes("T")) {
+        const parsed = new Date(raw);
+        if (!Number.isNaN(parsed.getTime())) {
+            return `${String(parsed.getHours()).padStart(2, "0")}:${String(parsed.getMinutes()).padStart(2, "0")}`;
+        }
+
+        const isoTimeMatch = raw.match(/T(\d{2}):(\d{2})/);
+        if (isoTimeMatch) {
+            return `${isoTimeMatch[1]}:${isoTimeMatch[2]}`;
+        }
+    }
+
+    // Valor numérico decimal (ex.: 1.5 horas)
+    if (/^\d+(\.\d+)?$/.test(raw)) {
+        const totalMinutes = Math.round(Number(raw) * 60);
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+
+    // Fallback para modelo antigo com horaEntrada/horaSaida
+    if (horaSaida) {
+        return `${raw} - ${horaSaida}`;
+    }
+
+    return raw;
+}
+
+function normalizePunch(item) {
+    const date = normalizeDate(item.date || item.data);
+    const location = item.location || item.local || "";
+
+    let hours = item.hours || item.duracao || "";
+    if (!hours && item.horaEntrada) {
+        hours = normalizeDuration(item.horaEntrada, item.horaSaida || "");
+    } else {
+        hours = normalizeDuration(hours, item.horaSaida || "");
+    }
+
+    return {
+        id: item.id || Date.now().toString(),
+        date,
+        hours,
+        location,
+        usuario: item.usuario || item.userEmail || ""
+    };
+}
 
 export const storageService = {   
     // Obter os registros da planilha usando JSONP para aniquilar o erro de CORS
@@ -15,11 +100,13 @@ export const storageService = {
                 // Limpa o script e a função da memória após receber os dados
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
-                resolve(data); // Retorna os pontos reais para a aplicação
+                const normalized = Array.isArray(data) ? data.map(normalizePunch) : [];
+                resolve(normalized); // Retorna os pontos normalizados para a aplicação
             };
 
             // Monta a URL injetando o e-mail e o nome da nossa função de callback
-            const url = `${SHEET_API_URL}?email=${encodeURIComponent(userEmail)}&callback=${callbackName}`;
+            const cacheBuster = Date.now();
+            const url = `${SHEET_API_URL}?action=getJornadas&userEmail=${encodeURIComponent(userEmail)}&callback=${callbackName}&_=${cacheBuster}`;
 
             // Injeta dinamicamente a tag script no HTML para carregar o arquivo do Google
             const script = document.createElement("script");
@@ -40,10 +127,12 @@ export const storageService = {
     // Enviar o ponto atrelando o e-mail do usuário ativo
     async savePunch(punchData, userEmail) {
         const payload = {
-            date: punchData.date,
-            hours: punchData.hours,
-            location: punchData.location,
-            userEmail: userEmail // Enviado para salvar na coluna D
+            action: "saveJornada",
+            id: Date.now().toString(),
+            data: punchData.date,
+            duracao: punchData.hours,
+            local: punchData.location || '',
+            userEmail: userEmail
         };
 
         try {

@@ -1,5 +1,62 @@
 // Substitua pela URL gerada na publicação do seu Google Apps Script
-const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyh1J3qZDX3mV7wocHCuiA8Sx3xBTcca4fIv7V5aP0NIAkms6B2JS7yFVt6WOp5z7Nupg/exec";
+const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbx5yHCGXI96pW42x5YW0V2RgSSRSNbmSeYL-_0yocWoHescYVkFWXDH0vAEzqLYYp8TYQ/exec";
+
+function executeJsonpAction(action, params = {}) {
+    return new Promise((resolve, reject) => {
+        const callbackName = `jsonp_action_${action}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        const query = new URLSearchParams({
+            action,
+            callback: callbackName,
+            _: Date.now().toString(),
+            ...Object.fromEntries(
+                Object.entries(params).map(([key, value]) => [key, value == null ? "" : String(value)])
+            )
+        });
+
+        window[callbackName] = (data) => {
+            const script = document.getElementById(callbackName);
+            if (script) script.remove();
+            delete window[callbackName];
+            resolve(data);
+        };
+
+        const script = document.createElement("script");
+        script.src = `${SHEET_API_URL}?${query.toString()}`;
+        script.id = callbackName;
+
+        script.onerror = () => {
+            const current = document.getElementById(callbackName);
+            if (current) current.remove();
+            delete window[callbackName];
+            reject(new Error(`Erro ao executar ação ${action}.`));
+        };
+
+        document.head.appendChild(script);
+    });
+}
+
+function normalizeAtendimento(item) {
+    const normalized = {
+        id: item.id || "",
+        titulo: item.titulo || "",
+        descricao: item.descricao || "",
+        dataPrevista: item.dataPrevista || "",
+        dataInicio: item.dataInicio || "",
+        finalizado: item.finalizado === true || String(item.finalizado).toLowerCase() === "true",
+        dataFim: item.dataFim || "",
+        usuario: item.usuario || item.userEmail || ""
+    };
+
+    const previstaPareceCriacao = typeof normalized.dataPrevista === "string" && normalized.dataPrevista.includes("T");
+    const inicioVazio = !normalized.dataInicio;
+
+    if (inicioVazio && previstaPareceCriacao) {
+        normalized.dataInicio = normalized.dataPrevista;
+        normalized.dataPrevista = "";
+    }
+
+    return normalized;
+}
 
 // Serviço para gerenciar atendimentos no Google Sheets
 export const atendimentosService = {
@@ -15,12 +72,13 @@ export const atendimentosService = {
             window[callbackName] = (data) => {
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
-                resolve(data);
+                const normalized = Array.isArray(data) ? data.map(normalizeAtendimento) : [];
+                resolve(normalized);
             };
 
             // Adiciona timestamp para evitar cache
             const cacheBuster = new Date().getTime();
-            const url = `${SHEET_API_URL}?type=atendimentos&email=${encodeURIComponent(userEmail)}&callback=${callbackName}&_=${cacheBuster}`;
+            const url = `${SHEET_API_URL}?action=getAtendimentos&userEmail=${encodeURIComponent(userEmail)}&callback=${callbackName}&_=${cacheBuster}`;
 
             const script = document.createElement("script");
             script.src = url;
@@ -46,6 +104,7 @@ export const atendimentosService = {
             id: Date.now().toString(),
             titulo: atendimento.titulo,
             descricao: atendimento.descricao || '',
+            dataPrevista: atendimento.dataPrevista || '',
             dataInicio: new Date().toISOString(),
             userEmail: userEmail
         };
@@ -62,6 +121,7 @@ export const atendimentosService = {
                 id: novoAtendimento.id,
                 titulo: novoAtendimento.titulo,
                 descricao: novoAtendimento.descricao,
+                dataPrevista: novoAtendimento.dataPrevista,
                 dataInicio: novoAtendimento.dataInicio,
                 finalizado: false,
                 dataFim: null
@@ -73,22 +133,42 @@ export const atendimentosService = {
     },
 
     /**
+     * Edita um atendimento existente
+     */
+    async editarAtendimento(atendimentoId, atendimento) {
+        try {
+            const response = await executeJsonpAction("editarAtendimento", {
+                id: atendimentoId,
+                titulo: atendimento.titulo,
+                descricao: atendimento.descricao || "",
+                dataPrevista: atendimento.dataPrevista || ""
+            });
+
+            if (!response || response.success !== true) {
+                throw new Error(response?.error || "Não foi possível editar o atendimento.");
+            }
+
+            return { status: "success" };
+        } catch (error) {
+            console.error("Erro ao editar atendimento:", error);
+            throw error;
+        }
+    },
+
+    /**
      * Finaliza um atendimento
      */
     async finalizarAtendimento(userEmail, atendimentoId) {
-        const data = {
-            action: "finalizarAtendimento",
-            id: atendimentoId,
-            dataFim: new Date().toISOString()
-        };
-
         try {
-            await fetch(SHEET_API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(data)
+            const response = await executeJsonpAction("finalizarAtendimento", {
+                id: atendimentoId,
+                dataFim: new Date().toISOString(),
+                userEmail
             });
+
+            if (!response || response.success !== true) {
+                throw new Error(response?.error || "Não foi possível finalizar o atendimento.");
+            }
 
             return { status: "success" };
         } catch (error) {
