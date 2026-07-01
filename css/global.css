@@ -4,24 +4,37 @@
     box-sizing: border-box;
 }
 
+html, body, #app {
+    width: 100%;
+    max-width: 100%;
+}
+
+#app {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
 body {
     font-family: var(--font-sans), sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-attachment: fixed;
+    background: #e9ecf5;
     color: var(--text-primary);
     min-height: 100vh;
     height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: stretch;
+    align-items: stretch;
     position: relative;
     padding: 0;
     margin: 0;
     overflow: hidden;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 768px) {
     body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+        justify-content: center;
+        align-items: center;
         padding: 20px;
         overflow: auto;
     }
