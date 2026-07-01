@@ -96,6 +96,24 @@
     color: var(--text-primary);
 }
 
+.atendimentos-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+.atendimentos-topbar-title {
+    margin: 0;
+}
+
+.btn-novo-atendimento {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
 .punch-table {
     width: 100%;
     border-collapse: collapse;
@@ -146,6 +164,16 @@
     box-shadow: var(--shadow-sm);
 }
 
+.atendimento-card-hoje {
+    border-color: #f59e0b;
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, var(--bg-primary) 72%);
+}
+
+.atendimento-card-hoje:hover {
+    border-color: #d97706;
+    box-shadow: 0 8px 20px rgba(217, 119, 6, 0.18);
+}
+
 .atendimento-card.finalizado {
     opacity: 0.7;
 }
@@ -171,6 +199,16 @@
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-hoje {
+    background-color: rgba(245, 158, 11, 0.24);
+    color: #b45309;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
     white-space: nowrap;
 }
 
@@ -202,6 +240,11 @@
 .atendimento-footer small {
     color: var(--text-secondary);
     font-size: 0.8rem;
+}
+
+.atendimento-actions {
+    display: flex;
+    gap: 8px;
 }
 
 .btn-editar {
@@ -238,4 +281,46 @@
 .btn-finalizar:hover {
     background-color: #22c55e;
     color: white;
+}
+
+@media (max-width: 480px) {
+    .dashboard, .historico, .perfil, .atendimentos {
+        padding: 14px;
+        padding-bottom: 150px;
+    }
+
+    .card-historico,
+    .filter-container {
+        padding: 14px;
+    }
+
+    .atendimentos-topbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-novo-atendimento {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .atendimento-header {
+        align-items: flex-start;
+    }
+
+    .atendimento-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .atendimento-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-editar,
+    .btn-finalizar {
+        width: 100%;
+    }
 }

@@ -2,6 +2,53 @@ import { Header } from "../components/header.js";
 import { formatDateTime, formatDate } from "../utils/format.js";
 
 export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
+    const toYmd = (value) => {
+        if (!value) return "";
+
+        const raw = String(value).trim();
+        if (!raw) return "";
+
+        // ISO parcial/completa: YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss
+        if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+            return raw.slice(0, 10);
+        }
+
+        // Formato brasileiro: DD/MM/YYYY
+        const brDate = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (brDate) {
+            const [, day, month, year] = brDate;
+            return `${year}-${month}-${day}`;
+        }
+
+        const parsed = new Date(raw);
+        if (Number.isNaN(parsed.getTime())) return "";
+
+        const year = parsed.getFullYear();
+        const month = String(parsed.getMonth() + 1).padStart(2, "0");
+        const day = String(parsed.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    const getLocalToday = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    const sortByPriorityDate = (a, b) => {
+        const aDate = toYmd(a.dataPrevista) || toYmd(a.dataInicio);
+        const bDate = toYmd(b.dataPrevista) || toYmd(b.dataInicio);
+
+        if (aDate && bDate) return aDate.localeCompare(bDate);
+        if (aDate) return -1;
+        if (bDate) return 1;
+        return (a.titulo || "").localeCompare(b.titulo || "", "pt-BR");
+    };
+
+    const today = getLocalToday();
+
     // Pega o mês/ano atual no formato YYYY-MM se não tiver período selecionado
     const currentPeriod = selectedPeriod || new Date().toISOString().slice(0, 7);
     
@@ -12,9 +59,13 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
         return atendimentoMonth === currentPeriod;
     });
     
-    // Separa atendimentos em aberto e finalizados
-    const emAberto = atendimentosFiltrados.filter(a => !a.finalizado);
-    const finalizados = atendimentosFiltrados.filter(a => a.finalizado);
+    // Separa atendimentos em aberto e finalizados e ordena por prioridade (data mais proxima primeiro)
+    const emAberto = atendimentosFiltrados
+        .filter(a => !a.finalizado)
+        .sort(sortByPriorityDate);
+    const finalizados = atendimentosFiltrados
+        .filter(a => a.finalizado)
+        .sort(sortByPriorityDate);
 
     return `
         ${Header(user)}
@@ -26,9 +77,9 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
             </div>
 
             <div class="card-historico" style="margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
-                    <h3 style="margin: 0;">Atendimentos em Aberto</h3>
-                    <button id="btnNovoAtendimento" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; white-space: nowrap;">
+                <div class="atendimentos-topbar">
+                    <h3 class="atendimentos-topbar-title">Atendimentos em Aberto</h3>
+                    <button id="btnNovoAtendimento" class="btn-primary btn-novo-atendimento">
                         ➕ Novo
                     </button>
                 </div>
@@ -39,17 +90,21 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
                     </p>
                 ` : `
                     <div class="atendimentos-lista">
-                        ${emAberto.map(atendimento => `
-                            <div class="atendimento-card" data-id="${atendimento.id}">
+                        ${emAberto.map(atendimento => {
+                            const atendimentoPrevistoDate = toYmd(atendimento.dataPrevista);
+                            const isToday = atendimentoPrevistoDate === today;
+
+                            return `
+                            <div class="atendimento-card ${isToday ? 'atendimento-card-hoje' : ''}" data-id="${atendimento.id}">
                                 <div class="atendimento-header">
                                     <strong>${atendimento.titulo}</strong>
-                                    <span class="badge badge-aberto">Em Aberto</span>
+                                    <span class="badge ${isToday ? 'badge-hoje' : 'badge-aberto'}">${isToday ? 'Hoje' : 'Em Aberto'}</span>
                                 </div>
                                 ${atendimento.descricao ? `<p class="atendimento-desc">${atendimento.descricao}</p>` : ''}
                                 ${atendimento.dataPrevista ? `<p class="atendimento-data-prevista">🎯 Previsto para: ${formatDate(atendimento.dataPrevista)}</p>` : ''}
                                 <div class="atendimento-footer">
                                     <small>📅 Criado: ${formatDateTime(atendimento.dataInicio)}</small>
-                                    <div style="display: flex; gap: 8px;">
+                                    <div class="atendimento-actions">
                                         <button class="btn-editar" data-id="${atendimento.id}" 
                                             data-titulo="${atendimento.titulo}" 
                                             data-descricao="${atendimento.descricao || ''}" 
@@ -62,7 +117,8 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
                                     </div>
                                 </div>
                             </div>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </div>
                 `}
             </div>
