@@ -26,6 +26,10 @@ function normalizeDuration(value, horaSaida = "") {
     const raw = String(value).trim();
     if (!raw) return "";
 
+    // Proteção: se por engano vier um e-mail (ou algo sem nenhum número) na
+    // coluna de duração, não exibe esse lixo como se fosse hora.
+    if (raw.includes("@") || !/\d/.test(raw)) return "";
+
     // Formato já esperado (HH:MM)
     if (/^\d{1,2}:\d{2}$/.test(raw)) {
         const [h, m] = raw.split(":").map(Number);
@@ -41,7 +45,13 @@ function normalizeDuration(value, horaSaida = "") {
     if (raw.includes("T")) {
         const parsed = new Date(raw);
         if (!Number.isNaN(parsed.getTime())) {
-            return `${String(parsed.getHours()).padStart(2, "0")}:${String(parsed.getMinutes()).padStart(2, "0")}`;
+            let h = parsed.getHours();
+            let m = parsed.getMinutes();
+            // Arredonda os segundos para o minuto mais próximo, evitando que
+            // "03:00" retorne como "02:59" por causa dos segundos quebrados.
+            if (parsed.getSeconds() >= 30) m += 1;
+            if (m >= 60) { m -= 60; h += 1; }
+            return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
         }
 
         const isoTimeMatch = raw.match(/T(\d{2}):(\d{2})/);
@@ -101,7 +111,20 @@ export const storageService = {
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
                 const normalized = Array.isArray(data) ? data.map(normalizePunch) : [];
-                resolve(normalized); // Retorna os pontos normalizados para a aplicação
+
+                if (normalized.length > 0) {
+                    // Guarda a última cópia conhecida para servir de reserva quando o
+                    // servidor do Google estiver "frio" e devolver vazio numa chamada.
+                    try {
+                        localStorage.setItem("worktime_punches", JSON.stringify(normalized));
+                    } catch (e) { /* ignora limite de armazenamento */ }
+                    resolve(normalized);
+                } else {
+                    // Sem registros do servidor: usa a reserva local, se existir,
+                    // para o Dashboard não mostrar 00h00m com dados já lançados.
+                    const backup = localStorage.getItem("worktime_punches");
+                    resolve(backup ? JSON.parse(backup) : normalized);
+                }
             };
 
             // Monta a URL injetando o e-mail e o nome da nossa função de callback
@@ -142,6 +165,22 @@ export const storageService = {
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
             });
+
+            // Atualiza a reserva local imediatamente para o novo lançamento já
+            // aparecer no Dashboard/Histórico sem depender da próxima busca.
+            try {
+                const backup = localStorage.getItem("worktime_punches");
+                const list = backup ? JSON.parse(backup) : [];
+                list.push(normalizePunch({
+                    id: payload.id,
+                    date: payload.data,
+                    hours: payload.duracao,
+                    location: payload.local,
+                    usuario: payload.userEmail
+                }));
+                localStorage.setItem("worktime_punches", JSON.stringify(list));
+            } catch (e) { /* ignora falha de armazenamento local */ }
+
             return true;
         } catch (error) {
             console.error("Erro ao enviar ponto:", error);

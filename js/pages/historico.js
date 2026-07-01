@@ -16,7 +16,7 @@ export function Historico(user, punches = [], selectedMonth = "") {
         ? filteredPunches.map(p => `
             <tr>
                 <td>${formatDate(p.date)}</td>
-                <td><strong>${p.hours}</strong></td>
+                <td><strong>${p.hours || "—"}</strong></td>
                 <td><span class="badge">${p.location}</span></td>
             </tr>
           `).join('')
