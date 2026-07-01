@@ -1,4 +1,4 @@
-const CACHE_NAME = "worktime-cache-v2";
+const CACHE_NAME = "worktime-cache-v3";
 const ASSETS = [
   "./index.html",
   "./css/variables.css",
@@ -34,16 +34,29 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
-// Intercepta as requisições para carregar do cache os estilos estáticos mais rápido
+// Estratégia "network-first": sempre tenta buscar a versão mais nova online e usa
+// o cache apenas como reserva quando o usuário estiver offline. Isso evita que o
+// celular fique preso numa versão antiga do HTML/CSS (o que quebrava o layout).
 self.addEventListener("fetch", (e) => {
-  // Ignora chamadas externas da API do Google Sheets e do Firebase Auth
-  if (e.request.url.includes("script.google.com") || e.request.url.includes("firebase")) {
+  // Só cuidamos de requisições GET; ignora chamadas externas do Google Sheets/Firebase
+  if (
+    e.request.method !== "GET" ||
+    e.request.url.includes("script.google.com") ||
+    e.request.url.includes("firebase")
+  ) {
     return;
   }
 
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      return cachedResponse || fetch(e.request);
-    })
+    fetch(e.request)
+      .then((networkResponse) => {
+        // Guarda uma cópia atualizada no cache para uso offline futuro
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(e.request, responseClone);
+        });
+        return networkResponse;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
