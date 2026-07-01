@@ -19,6 +19,9 @@ export function Header(user){
                 <h2>
                     ${user.displayName}
                 </h2>
+                <button class="install-button" id="installPwaButton" type="button" hidden>
+                    ⬇️ Instalar app
+                </button>
             </div>
 
             <img

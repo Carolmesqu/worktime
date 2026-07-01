@@ -94,6 +94,31 @@ body {
     border: 2px solid var(--bg-accent);
 }
 
+.install-button {
+    margin-top: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.35);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%);
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    box-shadow: 0 6px 14px rgba(102, 126, 234, 0.12);
+}
+
+.install-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(102, 126, 234, 0.18);
+}
+
+.install-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* Bottom Navigation Bar */
 .navbar {
     position: absolute;

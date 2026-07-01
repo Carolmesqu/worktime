@@ -3,6 +3,30 @@ import { render } from "./router.js";
 import { state, navigateTo } from "./state.js";
 
 const app = document.querySelector("#app");
+let deferredPwaPrompt = null;
+
+function isAppInstalled() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function syncInstallButton() {
+    const installButton = document.querySelector("#installPwaButton");
+    if (!installButton) return;
+
+    const shouldShow = Boolean(deferredPwaPrompt) && !isAppInstalled();
+    installButton.hidden = !shouldShow;
+}
+
+window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredPwaPrompt = event;
+    syncInstallButton();
+});
+
+window.addEventListener("appinstalled", () => {
+    deferredPwaPrompt = null;
+    syncInstallButton();
+});
 
 // Função para gerenciar os eventos dinâmicos da interface
 function setupEventListeners(user) {
@@ -11,6 +35,24 @@ function setupEventListeners(user) {
         const loginBtn = document.querySelector("#loginButton");
         if (loginBtn) loginBtn.addEventListener("click", login);
         return;
+    }
+
+    const installButton = document.querySelector("#installPwaButton");
+    if (installButton) {
+        syncInstallButton();
+        installButton.addEventListener("click", async () => {
+            if (!deferredPwaPrompt) return;
+
+            installButton.disabled = true;
+            try {
+                deferredPwaPrompt.prompt();
+                await deferredPwaPrompt.userChoice;
+            } finally {
+                deferredPwaPrompt = null;
+                installButton.disabled = false;
+                syncInstallButton();
+            }
+        });
     }
 
 // Eventos da Navbar (Troca de abas)
