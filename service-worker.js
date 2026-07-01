@@ -1,4 +1,4 @@
-const CACHE_NAME = "worktime-cache-v1";
+const CACHE_NAME = "worktime-cache-v2";
 const ASSETS = [
   "./index.html",
   "./css/variables.css",
@@ -15,6 +15,7 @@ self.addEventListener("install", (e) => {
       return cache.addAll(ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
 // Ativação e limpeza de caches antigos se houver atualização de versão
@@ -30,6 +31,7 @@ self.addEventListener("activate", (e) => {
       );
     })
   );
+  self.clients.claim();
 });
 
 // Intercepta as requisições para carregar do cache os estilos estáticos mais rápido

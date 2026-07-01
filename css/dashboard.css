@@ -1,14 +1,18 @@
 .dashboard, .historico, .perfil {
     padding: 20px;
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 160px; /* Garante que o conteúdo não fique escondido atrás do FAB/Navbar */
 }
 
 .atendimentos {
     padding: 20px;
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 160px;
 }
 
