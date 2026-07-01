@@ -2,6 +2,20 @@ import { Header } from "../components/header.js";
 import { formatDateTime, formatDate } from "../utils/format.js";
 
 export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
+    const servicoOptions = [
+        "Manutencao de Ar Condicionado",
+        "Instalacao de Ar Condicionado",
+        "Limpeza de Ar Condicionado",
+        "Recarga de Gas",
+        "Instalacao de Tomadas",
+        "Troca de Disjuntor",
+        "Instalacao Eletrica Residencial",
+        "Instalacao Eletrica Comercial",
+        "Reparo de Curto-Circuito",
+        "Troca de Fiacao",
+        "Outro"
+    ];
+
     const toYmd = (value) => {
         if (!value) return "";
 
@@ -100,6 +114,7 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
                                     <strong>${atendimento.titulo}</strong>
                                     <span class="badge ${isToday ? 'badge-hoje' : 'badge-aberto'}">${isToday ? 'Hoje' : 'Em Aberto'}</span>
                                 </div>
+                                ${atendimento.servico ? `<p class="atendimento-servico">🛠️ Serviço: ${atendimento.servico}</p>` : ''}
                                 ${atendimento.descricao ? `<p class="atendimento-desc">${atendimento.descricao}</p>` : ''}
                                 ${atendimento.dataPrevista ? `<p class="atendimento-data-prevista">🎯 Previsto para: ${formatDate(atendimento.dataPrevista)}</p>` : ''}
                                 <div class="atendimento-footer">
@@ -108,6 +123,7 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
                                         <button class="btn-editar" data-id="${atendimento.id}" 
                                             data-titulo="${atendimento.titulo}" 
                                             data-descricao="${atendimento.descricao || ''}" 
+                                            data-servico="${atendimento.servico || ''}"
                                             data-dataprevista="${atendimento.dataPrevista || ''}">
                                             ✏️ Editar
                                         </button>
@@ -137,6 +153,7 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
                                     <strong>${atendimento.titulo}</strong>
                                     <span class="badge badge-finalizado">Finalizado</span>
                                 </div>
+                                ${atendimento.servico ? `<p class="atendimento-servico">🛠️ Serviço: ${atendimento.servico}</p>` : ''}
                                 ${atendimento.descricao ? `<p class="atendimento-desc">${atendimento.descricao}</p>` : ''}
                                 <div class="atendimento-footer">
                                     <small>📅 ${formatDateTime(atendimento.dataInicio)}</small>
@@ -160,6 +177,13 @@ export function Atendimentos(user, atendimentos = [], selectedPeriod = null) {
                 <div class="form-group">
                     <label for="atendimentoDataPrevista">Data Prevista *</label>
                     <input type="date" id="atendimentoDataPrevista" required>
+                </div>
+                <div class="form-group">
+                    <label for="atendimentoServico">Serviço *</label>
+                    <select id="atendimentoServico" required>
+                        <option value="" selected disabled>Selecione o tipo de serviço</option>
+                        ${servicoOptions.map(servico => `<option value="${servico}">${servico}</option>`).join('')}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="atendimentoDescricao">Descrição (opcional)</label>

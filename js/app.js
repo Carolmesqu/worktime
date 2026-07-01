@@ -195,6 +195,7 @@ function setupEventListeners(user) {
     const modalAtendimento = document.querySelector("#modalAtendimento");
     const btnCancelarAtendimento = document.querySelector("#btnCancelarAtendimento");
     const btnSalvarAtendimento = document.querySelector("#btnSalvarAtendimento");
+    let isSavingAtendimento = false;
 
     if (btnNovoAtendimento && modalAtendimento) {
         // Abrir modal de novo atendimento
@@ -204,6 +205,7 @@ function setupEventListeners(user) {
             document.querySelector("#modalAtendimentoTitle").textContent = "Novo Atendimento";
             document.querySelector("#atendimentoTitulo").value = "";
             document.querySelector("#atendimentoDataPrevista").value = "";
+            document.querySelector("#atendimentoServico").value = "";
             document.querySelector("#atendimentoDescricao").value = "";
             
             modalAtendimento.classList.add("active");
@@ -216,6 +218,7 @@ function setupEventListeners(user) {
                 modalAtendimento.setAttribute("data-editing-id", "");
                 document.querySelector("#atendimentoTitulo").value = "";
                 document.querySelector("#atendimentoDataPrevista").value = "";
+                document.querySelector("#atendimentoServico").value = "";
                 document.querySelector("#atendimentoDescricao").value = "";
             });
         }
@@ -223,26 +226,35 @@ function setupEventListeners(user) {
         // Salvar novo/editar atendimento
         if (btnSalvarAtendimento) {
             btnSalvarAtendimento.addEventListener("click", async () => {
+                if (isSavingAtendimento) return;
+
                 const titulo = document.querySelector("#atendimentoTitulo").value.trim();
                 const dataPrevista = document.querySelector("#atendimentoDataPrevista").value;
+                const servico = document.querySelector("#atendimentoServico").value;
                 const descricao = document.querySelector("#atendimentoDescricao").value.trim();
                 const editingId = modalAtendimento.getAttribute("data-editing-id");
 
-                if (!titulo || !dataPrevista) {
-                    alert("Por favor, preencha o título e a data prevista!");
+                if (!titulo || !dataPrevista || !servico) {
+                    alert("Por favor, preencha título, data prevista e serviço!");
                     return;
                 }
+
+                isSavingAtendimento = true;
+                const originalSaveText = btnSalvarAtendimento.textContent;
+                btnSalvarAtendimento.disabled = true;
+                btnSalvarAtendimento.textContent = editingId ? "Salvando..." : "Criando...";
+                if (btnCancelarAtendimento) btnCancelarAtendimento.disabled = true;
 
                 try {
                     const { atendimentosService } = await import("./services/atendimentos.js");
                     
                     if (editingId) {
                         // Modo de edição
-                        await atendimentosService.editarAtendimento(editingId, { titulo, dataPrevista, descricao });
+                        await atendimentosService.editarAtendimento(user.email, editingId, { titulo, dataPrevista, servico, descricao });
                         alert("Atendimento atualizado com sucesso! ✏️");
                     } else {
                         // Modo de criação
-                        await atendimentosService.saveAtendimento(user.email, { titulo, dataPrevista, descricao });
+                        await atendimentosService.saveAtendimento(user.email, { titulo, dataPrevista, servico, descricao });
                         alert("Atendimento criado com sucesso! 📋");
                     }
 
@@ -250,6 +262,7 @@ function setupEventListeners(user) {
                     modalAtendimento.setAttribute("data-editing-id", "");
                     document.querySelector("#atendimentoTitulo").value = "";
                     document.querySelector("#atendimentoDataPrevista").value = "";
+                    document.querySelector("#atendimentoServico").value = "";
                     document.querySelector("#atendimentoDescricao").value = "";
 
                     await render(app, user);
@@ -257,6 +270,11 @@ function setupEventListeners(user) {
                 } catch (err) {
                     alert("Erro ao salvar atendimento.");
                     console.error(err);
+                } finally {
+                    isSavingAtendimento = false;
+                    btnSalvarAtendimento.disabled = false;
+                    btnSalvarAtendimento.textContent = originalSaveText;
+                    if (btnCancelarAtendimento) btnCancelarAtendimento.disabled = false;
                 }
             });
         }
@@ -269,6 +287,7 @@ function setupEventListeners(user) {
             const atendimentoId = btn.getAttribute("data-id");
             const titulo = btn.getAttribute("data-titulo");
             const descricao = btn.getAttribute("data-descricao");
+            const servico = btn.getAttribute("data-servico");
             const dataPrevista = btn.getAttribute("data-dataprevista");
 
             // Preencher o modal com os dados do atendimento
@@ -276,6 +295,7 @@ function setupEventListeners(user) {
             document.querySelector("#modalAtendimentoTitle").textContent = "Editar Atendimento";
             document.querySelector("#atendimentoTitulo").value = titulo;
             document.querySelector("#atendimentoDataPrevista").value = dataPrevista;
+            document.querySelector("#atendimentoServico").value = servico || "";
             document.querySelector("#atendimentoDescricao").value = descricao;
 
             modalAtendimento.classList.add("active");
@@ -286,9 +306,15 @@ function setupEventListeners(user) {
     const btnsFinalizar = document.querySelectorAll(".btn-finalizar");
     btnsFinalizar.forEach(btn => {
         btn.addEventListener("click", async () => {
+            if (btn.disabled) return;
+
             const atendimentoId = btn.getAttribute("data-id");
             
             if (confirm("Deseja finalizar este atendimento?")) {
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = "Finalizando...";
+
                 try {
                     const { atendimentosService } = await import("./services/atendimentos.js");
                     await atendimentosService.finalizarAtendimento(user.email, atendimentoId);
@@ -303,6 +329,8 @@ function setupEventListeners(user) {
                 } catch (err) {
                     alert("Erro ao finalizar atendimento.");
                     console.error(err);
+                    btn.disabled = false;
+                    btn.textContent = originalText;
                 }
             }
         });

@@ -40,12 +40,37 @@ function normalizeAtendimento(item) {
         id: item.id || "",
         titulo: item.titulo || "",
         descricao: item.descricao || "",
+        servico: item.servico || "",
         dataPrevista: item.dataPrevista || "",
         dataInicio: item.dataInicio || "",
         finalizado: item.finalizado === true || String(item.finalizado).toLowerCase() === "true",
         dataFim: item.dataFim || "",
         usuario: item.usuario || item.userEmail || ""
     };
+
+    // Compatibilidade com linhas antigas gravadas sem coluna "Servico".
+    // Nesses casos os campos ficam deslocados para a esquerda na planilha.
+    const servicoPareceData = /^\d{4}-\d{2}-\d{2}$/.test(String(normalized.servico || ""));
+    const previstaPareceDataInicio = typeof normalized.dataPrevista === "string" && normalized.dataPrevista.includes("T");
+    const inicioPareceBooleano = /^(true|false)$/i.test(String(normalized.dataInicio || ""));
+    const dataFimPareceEmail = typeof normalized.dataFim === "string" && normalized.dataFim.includes("@");
+    const usuarioVazio = !String(normalized.usuario || "").trim();
+
+    if (servicoPareceData && previstaPareceDataInicio && inicioPareceBooleano) {
+        const dataPrevistaDeslocada = normalized.servico;
+        const dataInicioDeslocada = normalized.dataPrevista;
+        const finalizadoDeslocado = String(normalized.dataInicio).toLowerCase() === "true";
+
+        normalized.dataPrevista = dataPrevistaDeslocada;
+        normalized.dataInicio = dataInicioDeslocada;
+        normalized.finalizado = normalized.finalizado || finalizadoDeslocado;
+        normalized.servico = "";
+
+        if (usuarioVazio && dataFimPareceEmail) {
+            normalized.usuario = normalized.dataFim;
+            normalized.dataFim = "";
+        }
+    }
 
     const previstaPareceCriacao = typeof normalized.dataPrevista === "string" && normalized.dataPrevista.includes("T");
     const inicioVazio = !normalized.dataInicio;
@@ -56,6 +81,14 @@ function normalizeAtendimento(item) {
     }
 
     return normalized;
+}
+
+function createIdempotencyKey() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+    }
+
+    return `idem_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
 }
 
 // Serviço para gerenciar atendimentos no Google Sheets
@@ -104,8 +137,10 @@ export const atendimentosService = {
             id: Date.now().toString(),
             titulo: atendimento.titulo,
             descricao: atendimento.descricao || '',
+            servico: atendimento.servico || '',
             dataPrevista: atendimento.dataPrevista || '',
             dataInicio: new Date().toISOString(),
+            idempotencyKey: createIdempotencyKey(),
             userEmail: userEmail
         };
 
@@ -121,6 +156,7 @@ export const atendimentosService = {
                 id: novoAtendimento.id,
                 titulo: novoAtendimento.titulo,
                 descricao: novoAtendimento.descricao,
+                servico: novoAtendimento.servico,
                 dataPrevista: novoAtendimento.dataPrevista,
                 dataInicio: novoAtendimento.dataInicio,
                 finalizado: false,
@@ -135,12 +171,14 @@ export const atendimentosService = {
     /**
      * Edita um atendimento existente
      */
-    async editarAtendimento(atendimentoId, atendimento) {
+    async editarAtendimento(userEmail, atendimentoId, atendimento) {
         try {
             const response = await executeJsonpAction("editarAtendimento", {
                 id: atendimentoId,
+                userEmail,
                 titulo: atendimento.titulo,
                 descricao: atendimento.descricao || "",
+                servico: atendimento.servico || "",
                 dataPrevista: atendimento.dataPrevista || ""
             });
 

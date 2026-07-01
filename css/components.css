@@ -257,7 +257,24 @@ body {
     transition: var(--transition-fast);
 }
 
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    outline: none;
+    transition: var(--transition-fast);
+}
+
 .form-group input:focus {
+    border-color: var(--bg-accent);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group select:focus {
     border-color: var(--bg-accent);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
